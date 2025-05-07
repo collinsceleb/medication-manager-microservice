@@ -16,6 +16,14 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@app/common/rmq": [
+        "libs/common/rmq/src"
+      ],
+      "@app/common/rmq/*": [
+        "libs/common/rmq/src/*"
+      ]
+    }
   }
 }
