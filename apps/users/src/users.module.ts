@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { RmqModule } from '@app/common/rmq';
-import { USERS_SERVICE } from '../../../libs/common/constants/service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user.entity';
+import { RmqModule } from '@app/common/rmq';
 
 @Module({
   imports: [
@@ -25,12 +24,11 @@ import { User } from './user.entity';
         database: configService.get<string>('DB_NAME'),
         entities: [User],
         synchronize: true,
-        logging: false,
-        migrations: [],
-        subscribers: [],
+        logging: true,
       }),
     }),
-    RmqModule.register({ name: USERS_SERVICE }),
+    TypeOrmModule.forFeature([User]),
+    RmqModule,
   ],
   controllers: [UsersController],
   providers: [UsersService],
