@@ -11,19 +11,20 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/apps/users/main",
+    "start:prod": "node dist/apps/medication-manager/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./apps/users/test/jest-e2e.json"
+    "test:e2e": "jest --config ./apps/medication-manager/test/jest-e2e.json"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.0",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.1.0",
     "@nestjs/jwt": "^11.0.0",
+    "@nestjs/mapped-types": "*",
     "@nestjs/microservices": "^11.1.0",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.1.0",
