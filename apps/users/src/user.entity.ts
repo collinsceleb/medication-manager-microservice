@@ -3,11 +3,14 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import * as argon2 from 'argon2';
 import { Exclude, Expose } from 'class-transformer';
+import { RefreshToken } from './refresh-tokens/entities/refresh-token.entity';
+import { Device } from './devices/entities/device.entity';
 
 @Entity('users')
 export class User {
@@ -69,6 +72,11 @@ export class User {
 
   @Column({ name: 'gender', nullable: true, type: 'varchar' })
   gender: string;
+
+  @OneToMany(() => RefreshToken, (refreshToken) => refreshToken.user)
+  refreshTokens: RefreshToken[];
+  @OneToMany(() => Device, (device) => device.user)
+  devices: Device[];
 
   async hashPassword(): Promise<void> {
     this.password = await argon2.hash(this.password);
