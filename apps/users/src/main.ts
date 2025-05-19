@@ -7,6 +7,7 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 async function bootstrap() {
   const appContext = await NestFactory.createApplicationContext(UsersModule);
   const configService = appContext.get(ConfigService);
+  await appContext.close();
 
   const microservice =
     await NestFactory.createMicroservice<MicroserviceOptions>(UsersModule, {

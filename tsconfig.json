@@ -23,6 +23,12 @@
       ],
       "@app/common/rmq/*": [
         "libs/common/rmq/src/*"
+      ],
+      "@app/utilities": [
+        "libs/common/utilities/src"
+      ],
+      "@app/utilities/*": [
+        "libs/common/utilities/src/*"
       ]
     }
   }

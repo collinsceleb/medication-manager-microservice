@@ -29,6 +29,7 @@
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.1.0",
     "@nestjs/typeorm": "^11.0.0",
+    "@sendgrid/mail": "^8.1.5",
     "amqp-connection-manager": "^4.1.14",
     "amqplib": "^0.10.8",
     "argon2": "^0.43.0",
@@ -87,7 +88,8 @@
       "<rootDir>/libs/"
     ],
     "moduleNameMapper": {
-      "^@app/common/rmq(|/.*)$": "<rootDir>/libs/common/rmq/src/$1"
+      "^@app/common/rmq(|/.*)$": "<rootDir>/libs/common/rmq/src/$1",
+      "^@app/utilities(|/.*)$": "<rootDir>/libs/common/utilities/src/$1"
     }
   }
 }
