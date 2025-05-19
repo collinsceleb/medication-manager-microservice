@@ -14,6 +14,7 @@ import {
 } from '@nestjs/microservices';
 import { RmqService } from '@app/common/rmq';
 import { User } from './user.entity';
+import { VerifyEmailDto } from './dto/verify-email.dto';
 
 @Controller()
 export class UsersController {
@@ -44,6 +45,32 @@ export class UsersController {
 
       return {
         error: error.message || 'Registration failed',
+        statusCode: error.status || 500,
+      };
+    }
+  }
+  @MessagePattern({ cmd: 'verify_email' })
+  @UseInterceptors(ClassSerializerInterceptor)
+  @SerializeOptions({
+    type: User,
+  })
+  async verifyEmail(
+    @Payload() verifyEmailDto: VerifyEmailDto,
+    @Ctx() context: RmqContext,
+  ) {
+    try {
+      const result = await this.usersService.verifyEmail(verifyEmailDto);
+      // Acknowledge the message
+      this.rmqService.ack(context);
+      return result;
+    } catch (error) {
+      console.error('Error processing email verification:', error.message);
+
+      // Acknowledge even on error
+      this.rmqService.ack(context);
+
+      return {
+        error: error.message || 'Email verification failed',
         statusCode: error.status || 500,
       };
     }

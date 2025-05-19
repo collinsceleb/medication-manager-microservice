@@ -4,6 +4,7 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
@@ -13,10 +14,15 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { NOTIFICATION_SERVICE } from '../../../libs/common/constants/service';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
+import { ConfigService } from '@nestjs/config';
+import { VerifyEmailDto } from './dto/verify-email.dto';
 
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
+  private readonly VERIFICATION_RETRIES = this.configService.get<number>(
+    'VERIFICATION_RETRIES',
+  );
 
   constructor(
     private readonly datasource: DataSource,
@@ -24,6 +30,7 @@ export class UsersService {
     private readonly userRepository: Repository<User>,
     @Inject(NOTIFICATION_SERVICE)
     private readonly verificationClient: ClientProxy,
+    private readonly configService: ConfigService,
   ) {}
 
   async register(createUserDto: CreateUserDto): Promise<User> {
@@ -87,6 +94,61 @@ export class UsersService {
       throw new InternalServerErrorException(
         'An error occurred while checking user existence. Please try again later.',
       );
+    }
+  }
+  async verifyEmail(
+    verifyEmailDto: VerifyEmailDto,
+  ): Promise<{ user: User; message: string }> {
+    const queryRunner = this.datasource.createQueryRunner();
+    try {
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+      const { passcode, email } = verifyEmailDto;
+      const existingUser = await queryRunner.manager.findOne(User, {
+        where: { email },
+      });
+      if (!existingUser) {
+        throw new NotFoundException('User not found');
+      }
+      if (existingUser.isEmailVerified) {
+        throw new BadRequestException('Email already verified');
+      }
+      const verification = await firstValueFrom(
+        this.verificationClient.send(
+          { cmd: 'verify_code' },
+          { email, passcode },
+        ),
+      );
+      if (!verification.success) {
+        switch (verification.reason) {
+          case 'INVALID_CODE':
+            throw new BadRequestException(verification.message);
+          case 'EXPIRED_CODE':
+            throw new BadRequestException(verification.message);
+          case 'MAX_ATTEMPTS':
+            throw new BadRequestException(verification.message);
+          case 'NOT_FOUND':
+            throw new BadRequestException(verification.message);
+          default:
+            throw new BadRequestException('Invalid verification code');
+        }
+      }
+      existingUser.isEmailVerified = true;
+      await queryRunner.manager.save(User, existingUser);
+      await queryRunner.commitTransaction();
+      return {
+        user: existingUser,
+        message: 'Email verified successfully',
+      };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      console.error('Error in verifyEmail:', error.message);
+      throw new InternalServerErrorException(
+        'An error occurred while verifying email. Please check server logs for details.',
+        error.message,
+      );
+    } finally {
+      await queryRunner.release();
     }
   }
 }
