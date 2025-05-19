@@ -1,17 +1,17 @@
 import { Module } from '@nestjs/common';
-import { UsersController } from './users.controller';
-import { UsersService } from './users.service';
+import { NotificationController } from './notification.controller';
+import { NotificationService } from './notification.service';
+import { VerificationsModule } from './verifications/verifications.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './user.entity';
 import { RmqModule } from '@app/common/rmq';
-import { NOTIFICATION_SERVICE } from '../../../libs/common/constants/service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Verification } from './verifications/entities/verification.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['apps/users/.env', '.env'],
+      envFilePath: ['apps/notification/.env', '.env'],
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -23,18 +23,15 @@ import { NOTIFICATION_SERVICE } from '../../../libs/common/constants/service';
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
-        entities: [User],
+        entities: [Verification],
         synchronize: true,
         logging: true,
       }),
     }),
-    TypeOrmModule.forFeature([User]),
+    VerificationsModule,
     RmqModule,
-    RmqModule.register({
-      name: NOTIFICATION_SERVICE,
-    }),
   ],
-  controllers: [UsersController],
-  providers: [UsersService],
+  controllers: [NotificationController],
+  providers: [NotificationService],
 })
-export class UsersModule {}
+export class NotificationModule {}

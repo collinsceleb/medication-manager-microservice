@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -9,6 +10,9 @@ import { User } from './user.entity';
 import { DataSource, Repository } from 'typeorm';
 import { CheckUserDto } from './dto/check-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
+import { NOTIFICATION_SERVICE } from '../../../libs/common/constants/service';
+import { ClientProxy } from '@nestjs/microservices';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class UsersService {
@@ -18,6 +22,8 @@ export class UsersService {
     private readonly datasource: DataSource,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @Inject(NOTIFICATION_SERVICE)
+    private readonly verificationClient: ClientProxy,
   ) {}
 
   async register(createUserDto: CreateUserDto): Promise<User> {
@@ -36,19 +42,24 @@ export class UsersService {
       });
       await user.hashPassword();
       await queryRunner.manager.save(User, user);
+      await firstValueFrom(
+        this.verificationClient.send(
+          { cmd: 'create_verification' },
+          {
+            email: user.email,
+            subject: 'Account Registration',
+            templateName: 'default_verification',
+          },
+        ),
+      );
       await queryRunner.commitTransaction();
       return user;
     } catch (error) {
+      await queryRunner.rollbackTransaction();
       this.logger.error(
         `Error registering user: ${error.message}`,
         error.stack,
       );
-      await queryRunner.rollbackTransaction();
-
-      if (error instanceof BadRequestException) {
-        throw error; // Re-throw validation errors
-      }
-
       throw new InternalServerErrorException(
         'An error occurred while registering the user. Please try again later.',
       );
