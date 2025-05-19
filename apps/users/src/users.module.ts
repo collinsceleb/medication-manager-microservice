@@ -6,6 +6,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { RmqModule } from '@app/common/rmq';
 import { NOTIFICATION_SERVICE } from '../../../libs/common/constants/service';
+import { DevicesModule } from './devices/devices.module';
+import { RefreshTokensModule } from './refresh-tokens/refresh-tokens.module';
+import { RefreshToken } from './refresh-tokens/entities/refresh-token.entity';
+import { Device } from './devices/entities/device.entity';
 
 @Module({
   imports: [
@@ -23,7 +27,7 @@ import { NOTIFICATION_SERVICE } from '../../../libs/common/constants/service';
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
-        entities: [User],
+        entities: [User, RefreshToken, Device],
         synchronize: true,
         logging: true,
       }),
@@ -33,6 +37,8 @@ import { NOTIFICATION_SERVICE } from '../../../libs/common/constants/service';
     RmqModule.register({
       name: NOTIFICATION_SERVICE,
     }),
+    DevicesModule,
+    RefreshTokensModule,
   ],
   controllers: [UsersController],
   providers: [UsersService],
