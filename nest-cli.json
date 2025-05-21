@@ -19,6 +19,15 @@
         "tsConfigPath": "apps/auth/tsconfig.app.json"
       }
     },
+    "auth-utils": {
+      "type": "library",
+      "root": "libs/auth-utils",
+      "entryFile": "index",
+      "sourceRoot": "libs/auth-utils/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/auth-utils/tsconfig.lib.json"
+      }
+    },
     "common/rmq": {
       "type": "library",
       "root": "libs/common/rmq",

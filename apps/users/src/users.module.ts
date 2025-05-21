@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -10,6 +10,7 @@ import { DevicesModule } from './devices/devices.module';
 import { RefreshTokensModule } from './refresh-tokens/refresh-tokens.module';
 import { RefreshToken } from './refresh-tokens/entities/refresh-token.entity';
 import { Device } from './devices/entities/device.entity';
+import { SharedModule } from '@app/auth-utils/shared/shared.module';
 
 @Module({
   imports: [
@@ -38,7 +39,8 @@ import { Device } from './devices/entities/device.entity';
       name: NOTIFICATION_SERVICE,
     }),
     DevicesModule,
-    RefreshTokensModule,
+    forwardRef(() => RefreshTokensModule),
+    SharedModule,
   ],
   controllers: [UsersController],
   providers: [UsersService],

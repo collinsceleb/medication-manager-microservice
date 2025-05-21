@@ -20,9 +20,6 @@ import { VerifyEmailDto } from './dto/verify-email.dto';
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
-  private readonly VERIFICATION_RETRIES = this.configService.get<number>(
-    'VERIFICATION_RETRIES',
-  );
 
   constructor(
     private readonly datasource: DataSource,
