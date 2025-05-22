@@ -1,7 +1,8 @@
-import { Body, Controller, Post, Req } from '@nestjs/common';
+import { Body, Controller, Param, Post, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from '../../../auth/src/dto/create-auth.dto';
 import { Request } from 'express';
+import { CreateRefreshTokenDto } from '../../../users/src/refresh-tokens/dto/create-refresh-token.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -14,5 +15,21 @@ export class AuthController {
       ipAddress: request.ip,
     };
     return await this.authService.login(createAuthDto, metadata);
+  }
+  @Post('refreshToken/:uniqueDeviceId')
+  async refreshToken(
+    @Body() createRefreshTokenDto: CreateRefreshTokenDto,
+    @Param('uniqueDeviceId') uniqueDeviceId: string,
+    @Req() request: Request,
+  ) {
+    const metadata = {
+      userAgent: request.headers['user-agent'],
+      ipAddress: request.ip,
+    };
+    return await this.authService.refreshToken(
+      createRefreshTokenDto,
+      uniqueDeviceId,
+      metadata,
+    );
   }
 }
