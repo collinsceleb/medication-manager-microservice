@@ -5,7 +5,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateRefreshTokenDto } from './dto/create-refresh-token.dto';
-import crypto from 'node:crypto';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Device } from '../devices/entities/device.entity';
@@ -15,7 +14,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { UtilitiesService } from '@app/utilities';
 import { UAParser } from 'ua-parser-js';
-import { Request } from 'express';
+import * as crypto from 'node:crypto';
 import { TokenResponse } from '../token-response/token-response';
 import { JwtPayload } from '../jwt-payload/jwt-payload';
 

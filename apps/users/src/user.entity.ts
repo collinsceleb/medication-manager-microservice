@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import * as argon2 from 'argon2';
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude } from 'class-transformer';
 import { RefreshToken } from './refresh-tokens/entities/refresh-token.entity';
 import { Device } from './devices/entities/device.entity';
 
