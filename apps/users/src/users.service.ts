@@ -16,6 +16,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 import { VerifyEmailDto } from './dto/verify-email.dto';
+import { CreateAuthDto } from '../../auth/src/dto/create-auth.dto';
 
 @Injectable()
 export class UsersService {
@@ -146,6 +147,57 @@ export class UsersService {
       );
     } finally {
       await queryRunner.release();
+    }
+  }
+  async findUserByEmail(email: string): Promise<User> {
+    try {
+      const user = await this.userRepository.findOne({ where: { email } });
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+      return user;
+    } catch (error) {
+      this.logger.error(`Error finding user by email: ${error.message}`);
+      throw new InternalServerErrorException(
+        'An error occurred while finding user by email. Please try again later.',
+      );
+    }
+  }
+  async validateUser(createAuthDto: CreateAuthDto): Promise<User> {
+    try {
+      const { email, password } = createAuthDto;
+      const user = await this.findUserByEmail(email);
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+      if (user.isDeleted) {
+        throw new BadRequestException('Account does not exist');
+      }
+      if (!user.isEmailVerified) {
+        throw new BadRequestException(
+          'Email not verified. Please, verify your email.',
+        );
+      }
+      if (user.isLocked) {
+        throw new BadRequestException(
+          'Account is locked. Kindly reset your password.',
+        );
+      }
+      if (user.isBlocked) {
+        throw new BadRequestException(
+          'Account is blocked. Kindly contact support.',
+        );
+      }
+      const isPasswordValid = await user.comparePassword(password);
+      if (!isPasswordValid) {
+        throw new BadRequestException('Invalid password');
+      }
+      return user;
+    } catch (error) {
+      this.logger.error(`Error checking user status: ${error.message}`);
+      throw new InternalServerErrorException(
+        'An error occurred while checking user status. Please try again later.',
+      );
     }
   }
 }

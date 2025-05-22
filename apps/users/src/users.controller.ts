@@ -15,6 +15,7 @@ import {
 import { RmqService } from '@app/common/rmq';
 import { User } from './user.entity';
 import { VerifyEmailDto } from './dto/verify-email.dto';
+import { CreateAuthDto } from '../../auth/src/dto/create-auth.dto';
 
 @Controller()
 export class UsersController {
@@ -71,6 +72,55 @@ export class UsersController {
 
       return {
         error: error.message || 'Email verification failed',
+        statusCode: error.status || 500,
+      };
+    }
+  }
+  @MessagePattern({ cmd: 'get_user_by_email' })
+  @UseInterceptors(ClassSerializerInterceptor)
+  @SerializeOptions({
+    type: User,
+  })
+  async getUserByEmail(
+    @Payload() email: string,
+    @Ctx() context: RmqContext,
+  ): Promise<User> {
+    try {
+      const user = await this.usersService.findUserByEmail(email);
+      // Acknowledge the message
+      this.rmqService.ack(context);
+      return user;
+    } catch (error) {
+      console.error('Error processing get_user_by_email:', error.message);
+
+      // Acknowledge even on error
+      this.rmqService.ack(context);
+
+      return error;
+    }
+  }
+  @MessagePattern({ cmd: 'validate_user' })
+  @UseInterceptors(ClassSerializerInterceptor)
+  @SerializeOptions({
+    type: User,
+  })
+  async validateUser(
+    @Payload() createAuthDto: CreateAuthDto,
+    @Ctx() context: RmqContext,
+  ) {
+    try {
+      const result = await this.usersService.validateUser(createAuthDto);
+      // Acknowledge the message
+      this.rmqService.ack(context);
+      return result;
+    } catch (error) {
+      console.error('Error processing validating user:', error.message);
+
+      // Acknowledge even on error
+      this.rmqService.ack(context);
+
+      return {
+        error: error.message || 'Validating user failed',
         statusCode: error.status || 500,
       };
     }
