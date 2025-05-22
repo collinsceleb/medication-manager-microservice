@@ -216,7 +216,7 @@ export class RefreshTokensService {
       const device = await this.deviceRepository.findOne({
         where: {
           uniqueDeviceId: uniqueDeviceId,
-          user: payload.sub as unknown as User,
+          user: { id: payload.sub },
         },
       });
 
@@ -322,6 +322,7 @@ export class RefreshTokensService {
         throw new BadRequestException('Token is already revoked');
       }
       storedToken.isRevoked = true;
+      storedToken.isActive = false;
       const token = await queryRunner.manager.save(RefreshToken, storedToken);
       await queryRunner.commitTransaction();
       return token;
