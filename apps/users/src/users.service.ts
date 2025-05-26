@@ -192,11 +192,26 @@ export class UsersService {
       if (!isPasswordValid) {
         throw new BadRequestException('Invalid password');
       }
+      user.lastLogin = new Date();
       return user;
     } catch (error) {
       this.logger.error(`Error checking user status: ${error.message}`);
       throw new InternalServerErrorException(
         'An error occurred while checking user status. Please try again later.',
+      );
+    }
+  }
+  async findUserById(id: string): Promise<User> {
+    try {
+      const user = await this.userRepository.findOne({ where: { id } });
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+      return user;
+    } catch (error) {
+      this.logger.error(`Error finding user by id: ${error.message}`);
+      throw new InternalServerErrorException(
+        'An error occurred while finding user by id. Please try again later.',
       );
     }
   }
