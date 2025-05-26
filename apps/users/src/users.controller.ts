@@ -99,6 +99,29 @@ export class UsersController {
       return error;
     }
   }
+  @MessagePattern({ cmd: 'get_user' })
+  @UseInterceptors(ClassSerializerInterceptor)
+  @SerializeOptions({
+    type: User,
+  })
+  async getUserById(
+    @Payload() id: string,
+    @Ctx() context: RmqContext,
+  ): Promise<User> {
+    try {
+      const user = await this.usersService.findUserById(id);
+      // Acknowledge the message
+      this.rmqService.ack(context);
+      return user;
+    } catch (error) {
+      console.error('Error processing get_user_by_id:', error.message);
+
+      // Acknowledge even on error
+      this.rmqService.ack(context);
+
+      return error;
+    }
+  }
   @MessagePattern({ cmd: 'validate_user' })
   @UseInterceptors(ClassSerializerInterceptor)
   @SerializeOptions({

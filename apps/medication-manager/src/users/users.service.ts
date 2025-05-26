@@ -74,4 +74,33 @@ export class UsersService {
       );
     }
   }
+  async findUserById(id: string) {
+    try {
+      const response = await firstValueFrom(
+        this.client.send({ cmd: 'get_user' }, id).pipe(
+          timeout(30000),
+          catchError((err) => {
+            this.logger.error(
+              `Microservice communication error: ${err.message}`,
+            );
+            throw new InternalServerErrorException(
+              'Failed to communicate with user service. Please try again later.',
+            );
+          }),
+        ),
+      );
+      if (response?.error) {
+        throw new BadRequestException(response.error);
+      }
+
+      return response;
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'An error occurred while fetching user by ID. Please try again later.',
+      );
+    }
+  }
 }
