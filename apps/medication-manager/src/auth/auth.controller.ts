@@ -3,11 +3,21 @@ import { AuthService } from './auth.service';
 import { CreateAuthDto } from '../../../auth/src/dto/create-auth.dto';
 import { Request } from 'express';
 import { CreateRefreshTokenDto } from '../../../users/src/refresh-tokens/dto/create-refresh-token.dto';
+import { CreateUserDto } from '../users/dto/create-user.dto';
+import { VerifyEmailDto } from '../../../users/src/dto/verify-email.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Post('register')
+  async register(@Body() createUserDto: CreateUserDto) {
+    return await this.authService.register(createUserDto);
+  }
+  @Post('verify-email')
+  async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto) {
+    return await this.authService.verifyEmail(verifyEmailDto);
+  }
   @Post('login')
   async login(@Body() createAuthDto: CreateAuthDto, @Req() request: Request) {
     const metadata = {

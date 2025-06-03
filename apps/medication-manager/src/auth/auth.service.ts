@@ -13,6 +13,8 @@ import { ClientProxy } from '@nestjs/microservices';
 import { CreateAuthDto } from '../../../auth/src/dto/create-auth.dto';
 import { catchError, firstValueFrom, timeout } from 'rxjs';
 import { CreateRefreshTokenDto } from '../../../users/src/refresh-tokens/dto/create-refresh-token.dto';
+import { CreateUserDto } from '../users/dto/create-user.dto';
+import { VerifyEmailDto } from '../../../users/src/dto/verify-email.dto';
 
 @Injectable()
 export class AuthService {
@@ -21,6 +23,64 @@ export class AuthService {
     @Inject(AUTH_SERVICE) private readonly authClient: ClientProxy,
     @Inject(USERS_SERVICE) private readonly usersClient: ClientProxy,
   ) {}
+  async register(createUserDto: CreateUserDto) {
+    try {
+      const response = await firstValueFrom(
+        this.usersClient.send({ cmd: 'register_user' }, createUserDto).pipe(
+          timeout(30000),
+          catchError((err) => {
+            this.logger.error(
+              `Microservice communication error: ${err.message}`,
+            );
+            throw new InternalServerErrorException(
+              'Failed to communicate with auth service. Please try again later.',
+            );
+          }),
+        ),
+      );
+      if (response?.error) {
+        throw new BadRequestException(response.error);
+      }
+
+      return response;
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'An error occurred while registering the user. Please try again later.',
+      );
+    }
+  }
+  async verifyEmail(verifyEmailDto: VerifyEmailDto) {
+    try {
+      const response = await firstValueFrom(
+        this.usersClient.send({ cmd: 'verify_email' }, verifyEmailDto).pipe(
+          timeout(30000),
+          catchError((err) => {
+            this.logger.error(
+              `Microservice communication error: ${err.message}`,
+            );
+            throw new InternalServerErrorException(
+              'Failed to communicate with auth service. Please try again later.',
+            );
+          }),
+        ),
+      );
+      if (response?.error) {
+        throw new BadRequestException(response.error);
+      }
+
+      return response;
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'An error occurred while verifying email. Please try again later.',
+      );
+    }
+  }
   async login(
     createAuthDto: CreateAuthDto,
     metadata: { userAgent: string; ipAddress: string },
