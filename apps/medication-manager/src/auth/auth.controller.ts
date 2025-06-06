@@ -1,4 +1,12 @@
-import { Body, Controller, Param, Post, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from '../../../auth/src/dto/create-auth.dto';
 import { Request } from 'express';
@@ -41,5 +49,21 @@ export class AuthController {
       uniqueDeviceId,
       metadata,
     );
+  }
+
+  @Patch('revoke-token/:uniqueDeviceId')
+  async revokeToken(
+    @Param('uniqueDeviceId') uniqueDeviceId: string,
+    @Body() createRefreshTokenDto: CreateRefreshTokenDto,
+  ) {
+    return await this.authService.revokeToken(
+      uniqueDeviceId,
+      createRefreshTokenDto,
+    );
+  }
+
+  @Patch('revoke-all-tokens')
+  async revokeAllTokens(@Query('userId') userId?: string) {
+    return await this.authService.revokeAllTokens(userId);
   }
 }

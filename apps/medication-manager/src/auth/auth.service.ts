@@ -134,7 +134,7 @@ export class AuthService {
                 `Microservice communication error: ${err.message}`,
               );
               throw new InternalServerErrorException(
-                'Failed to communicate with users service. Please try again later.',
+                'Failed to communicate with auth service. Please try again later.',
               );
             }),
           ),
@@ -142,7 +142,6 @@ export class AuthService {
       if (response?.error) {
         throw new BadRequestException(response.error);
       }
-
       return response;
     } catch (error) {
       if (error instanceof BadRequestException) {
@@ -150,6 +149,70 @@ export class AuthService {
       }
       throw new InternalServerErrorException(
         'An error occurred while refreshing the token. Please try again later.',
+      );
+    }
+  }
+  async revokeToken(
+    uniqueDeviceId: string,
+    createRefreshTokenDto: CreateRefreshTokenDto,
+  ) {
+    try {
+      const response = await firstValueFrom(
+        this.usersClient
+          .send(
+            { cmd: 'revoke_token' },
+            { uniqueDeviceId, createRefreshTokenDto },
+          )
+          .pipe(
+            timeout(30000),
+            catchError((err) => {
+              this.logger.error(
+                `Microservice communication error: ${err.message}`,
+              );
+              throw new InternalServerErrorException(
+                'Failed to communicate with auth service. Please try again later.',
+              );
+            }),
+          ),
+      );
+      if (response?.error) {
+        throw new BadRequestException(response.error);
+      }
+      return response;
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'An error occurred while revoking the token. Please try again later.',
+      );
+    }
+  }
+  async revokeAllTokens(userId?: string) {
+    try {
+      const response = await firstValueFrom(
+        this.usersClient.send({ cmd: 'revoke_all_tokens' }, { userId }).pipe(
+          timeout(30000),
+          catchError((err) => {
+            this.logger.error(
+              `Microservice communication error: ${err.message}`,
+            );
+            throw new InternalServerErrorException(
+              'Failed to communicate with auth service. Please try again later.',
+            );
+          }),
+        ),
+      );
+      if (response?.error) {
+        throw new BadRequestException(response.error);
+      }
+      return response;
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'An error occurred while revoking all the tokens. Please try again later.',
       );
     }
   }
