@@ -84,7 +84,7 @@ export class VerificationsService {
       case 'forgot_password':
         return `Use ${code} to reset your password. The code expires in ${expiresAt}.`;
       case 'change_password':
-        return `You requested to change your password. Use this ${code} to change your email. The code expires in ${expiresAt}.`;
+        return `You requested to change your password. Use this ${code} to change your password. The code expires in ${expiresAt}.`;
       // Add more templates as needed
       default:
         throw new Error(`Unknown template: ${templateName}`);
