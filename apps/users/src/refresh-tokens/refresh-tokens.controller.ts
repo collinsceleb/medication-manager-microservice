@@ -104,6 +104,29 @@ export class RefreshTokensController {
     }
   }
 
+  @MessagePattern({ cmd: 'remove_revoked_tokens' })
+  async removeRevokedTokens(@Ctx() context: RmqContext) {
+    try {
+      const result = await this.refreshTokensService.removeRevokedTokens();
+      // Acknowledge the message
+      this.rmqService.ack(context);
+      return result;
+    } catch (error) {
+      console.error(
+        'Error processing removing all revoked tokens:',
+        error.message,
+      );
+
+      // Acknowledge even on error
+      this.rmqService.ack(context);
+
+      return {
+        error: error.message || 'Removing all revoked tokens failed',
+        statusCode: error.status || 500,
+      };
+    }
+  }
+
   @MessagePattern({ cmd: 'generate_tokens' })
   async generateTokens(
     @Payload()

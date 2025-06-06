@@ -216,4 +216,32 @@ export class AuthService {
       );
     }
   }
+  async removeRevokedTokens() {
+    try {
+      const response = await firstValueFrom(
+        this.usersClient.send({ cmd: 'remove_revoked_tokens' }, {}).pipe(
+          timeout(30000),
+          catchError((err) => {
+            this.logger.error(
+              `Microservice communication error: ${err.message}`,
+            );
+            throw new InternalServerErrorException(
+              'Failed to communicate with auth service. Please try again later.',
+            );
+          }),
+        ),
+      );
+      if (response?.error) {
+        throw new BadRequestException(response.error);
+      }
+      return response;
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'An error occurred while revoking all the tokens. Please try again later.',
+      );
+    }
+  }
 }

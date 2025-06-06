@@ -1,6 +1,6 @@
 import {
   Body,
-  Controller,
+  Controller, Delete,
   Param,
   Patch,
   Post,
@@ -65,5 +65,10 @@ export class AuthController {
   @Patch('revoke-all-tokens')
   async revokeAllTokens(@Query('userId') userId?: string) {
     return await this.authService.revokeAllTokens(userId);
+  }
+
+  @Delete('remove-revoked-tokens')
+  async removeRevokedTokens() {
+    return await this.authService.removeRevokedTokens();
   }
 }
