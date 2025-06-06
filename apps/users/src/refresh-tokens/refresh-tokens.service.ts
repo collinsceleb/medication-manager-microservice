@@ -17,6 +17,7 @@ import { UAParser } from 'ua-parser-js';
 import * as crypto from 'node:crypto';
 import { TokenResponse } from '../token-response/token-response';
 import { JwtPayload } from '../jwt-payload/jwt-payload';
+import { UpdateRefreshTokenDto } from './dto/update-refresh-token.dto';
 
 @Injectable()
 export class RefreshTokensService {
@@ -208,7 +209,7 @@ export class RefreshTokensService {
         );
       }
       if (storedToken.expiresAt < new Date()) {
-        await this.revokeToken(uniqueDeviceId, storedToken.token);
+        await this.revokeToken(uniqueDeviceId, createRefreshTokenDto);
         throw new BadRequestException(
           'Refresh token has expired. Please Log in again',
         );
@@ -244,7 +245,7 @@ export class RefreshTokensService {
           longitude: location.longitude,
         },
       );
-      await this.revokeToken(uniqueDeviceId, storedToken.token);
+      await this.revokeToken(uniqueDeviceId, createRefreshTokenDto);
       const newJwtId = crypto.randomUUID();
       const newPayload: JwtPayload = {
         sub: payload.sub,
@@ -292,12 +293,13 @@ export class RefreshTokensService {
 
   async revokeToken(
     uniqueDeviceId: string,
-    refreshToken: string,
-  ): Promise<RefreshToken | null> {
+    createRefreshTokenDto: CreateRefreshTokenDto,
+  ): Promise<{ message: string }> {
     const queryRunner = this.datasource.createQueryRunner();
     try {
       await queryRunner.connect();
       await queryRunner.startTransaction();
+      const { refreshToken } = createRefreshTokenDto;
       if (typeof refreshToken !== 'string') {
         throw new BadRequestException(
           'Invalid token format. Token should be a string',
@@ -325,7 +327,7 @@ export class RefreshTokensService {
       storedToken.isActive = false;
       const token = await queryRunner.manager.save(RefreshToken, storedToken);
       await queryRunner.commitTransaction();
-      return token;
+      return { message: 'Token revoked successfully' };
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.error('Error revoking token:', error);
@@ -384,6 +386,7 @@ export class RefreshTokensService {
       if (typeof refreshToken !== 'string') {
         throw new BadRequestException('Refresh token must be a string');
       }
+      console.log('refreshToken type:', typeof refreshToken);
       const payload: JwtPayload = this.jwtService.verify(refreshToken);
       const existingDevice = await this.deviceRepository.findOne({
         where: {
@@ -435,7 +438,7 @@ export class RefreshTokensService {
    * Function to revoke all tokens
    * @returns tokens
    */
-  async revokeAllTokens(userId?: string): Promise<void> {
+  async revokeAllTokens(userId?: string): Promise<{ message: string }> {
     const queryRunner = this.datasource.createQueryRunner();
     try {
       await queryRunner.connect();
@@ -448,6 +451,7 @@ export class RefreshTokensService {
         isActive: false,
       });
       await queryRunner.commitTransaction();
+      return { message: 'All tokens revoked successfully' };
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.error('Error revoking all tokens:', error);

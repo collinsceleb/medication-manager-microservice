@@ -53,16 +53,16 @@ export class RefreshTokensController {
   async revokeToken(
     @Payload()
     data: {
-      refreshToken: string;
+      createRefreshTokenDto: CreateRefreshTokenDto;
       uniqueDeviceId: string;
     },
     @Ctx() context: RmqContext,
   ) {
     try {
-      const { refreshToken, uniqueDeviceId } = data;
+      const { createRefreshTokenDto, uniqueDeviceId } = data;
       const result = await this.refreshTokensService.revokeToken(
         uniqueDeviceId,
-        refreshToken,
+        createRefreshTokenDto,
       );
       // Acknowledge the message
       this.rmqService.ack(context);
@@ -83,9 +83,10 @@ export class RefreshTokensController {
   @MessagePattern({ cmd: 'revoke_all_tokens' })
   async revokeAllTokens(
     @Ctx() context: RmqContext,
-    @Payload() userId?: string,
+    @Payload() payload?: { userId?: string },
   ) {
     try {
+      const userId = payload?.userId;
       const result = await this.refreshTokensService.revokeAllTokens(userId);
       // Acknowledge the message
       this.rmqService.ack(context);

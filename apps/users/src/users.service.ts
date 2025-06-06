@@ -193,6 +193,7 @@ export class UsersService {
         throw new BadRequestException('Invalid password');
       }
       user.lastLogin = new Date();
+      await this.userRepository.save(user);
       return user;
     } catch (error) {
       this.logger.error(`Error checking user status: ${error.message}`);
