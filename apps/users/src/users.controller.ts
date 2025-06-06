@@ -16,6 +16,8 @@ import { RmqService } from '@app/common/rmq';
 import { User } from './user.entity';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { CreateAuthDto } from '../../auth/src/dto/create-auth.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Controller()
 export class UsersController {
@@ -144,6 +146,59 @@ export class UsersController {
 
       return {
         error: error.message || 'Validating user failed',
+        statusCode: error.status || 500,
+      };
+    }
+  }
+  @MessagePattern({ cmd: 'forgot_password' })
+  @UseInterceptors(ClassSerializerInterceptor)
+  @SerializeOptions({
+    type: User,
+  })
+  async forgotPassword(
+    @Payload() forgotPasswordDto: ForgotPasswordDto,
+    @Ctx() context: RmqContext,
+  ) {
+    try {
+      const result = await this.usersService.forgotPassword(forgotPasswordDto);
+      // Acknowledge the message
+      this.rmqService.ack(context);
+      return result;
+    } catch (error) {
+      console.error('Error processing forgot password:', error.message);
+
+      // Acknowledge even on error
+      this.rmqService.ack(context);
+
+      return {
+        error: error.message || 'Forgot password failed',
+        statusCode: error.status || 500,
+      };
+    }
+  }
+
+  @MessagePattern({ cmd: 'reset_password' })
+  @UseInterceptors(ClassSerializerInterceptor)
+  @SerializeOptions({
+    type: User,
+  })
+  async resetPassword(
+    @Payload() resetPasswordDto: ResetPasswordDto,
+    @Ctx() context: RmqContext,
+  ) {
+    try {
+      const result = await this.usersService.resetPassword(resetPasswordDto);
+      // Acknowledge the message
+      this.rmqService.ack(context);
+      return result;
+    } catch (error) {
+      console.error('Error processing resetting password:', error.message);
+
+      // Acknowledge even on error
+      this.rmqService.ack(context);
+
+      return {
+        error: error.message || 'Reset password failed',
         statusCode: error.status || 500,
       };
     }

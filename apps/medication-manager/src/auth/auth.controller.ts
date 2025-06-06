@@ -1,6 +1,7 @@
 import {
   Body,
-  Controller, Delete,
+  Controller,
+  Delete,
   Param,
   Patch,
   Post,
@@ -13,6 +14,8 @@ import { Request } from 'express';
 import { CreateRefreshTokenDto } from '../../../users/src/refresh-tokens/dto/create-refresh-token.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { VerifyEmailDto } from '../../../users/src/dto/verify-email.dto';
+import { ForgotPasswordDto } from '../../../users/src/dto/forgot-password.dto';
+import { ResetPasswordDto } from '../../../users/src/dto/reset-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -70,5 +73,15 @@ export class AuthController {
   @Delete('remove-revoked-tokens')
   async removeRevokedTokens() {
     return await this.authService.removeRevokedTokens();
+  }
+
+  @Post('forgot-password')
+  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    return await this.authService.forgotPassword(forgotPasswordDto);
+  }
+
+  @Post('forgot-password')
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return await this.authService.resetPassword(resetPasswordDto);
   }
 }

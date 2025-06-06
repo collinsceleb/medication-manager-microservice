@@ -15,6 +15,8 @@ import { catchError, firstValueFrom, timeout } from 'rxjs';
 import { CreateRefreshTokenDto } from '../../../users/src/refresh-tokens/dto/create-refresh-token.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { VerifyEmailDto } from '../../../users/src/dto/verify-email.dto';
+import { ForgotPasswordDto } from '../../../users/src/dto/forgot-password.dto';
+import { ResetPasswordDto } from '../../../users/src/dto/reset-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -241,6 +243,66 @@ export class AuthService {
       }
       throw new InternalServerErrorException(
         'An error occurred while revoking all the tokens. Please try again later.',
+      );
+    }
+  }
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
+    try {
+      const response = await firstValueFrom(
+        this.usersClient
+          .send({ cmd: 'forgot_password' }, { forgotPasswordDto })
+          .pipe(
+            timeout(30000),
+            catchError((err) => {
+              this.logger.error(
+                `Microservice communication error: ${err.message}`,
+              );
+              throw new InternalServerErrorException(
+                'Failed to communicate with auth service. Please try again later.',
+              );
+            }),
+          ),
+      );
+      if (response?.error) {
+        throw new BadRequestException(response.error);
+      }
+      return response;
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'An error occurred while forgot password. Please try again later.',
+      );
+    }
+  }
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    try {
+      const response = await firstValueFrom(
+        this.usersClient
+          .send({ cmd: 'forgot_password' }, { resetPasswordDto })
+          .pipe(
+            timeout(30000),
+            catchError((err) => {
+              this.logger.error(
+                `Microservice communication error: ${err.message}`,
+              );
+              throw new InternalServerErrorException(
+                'Failed to communicate with auth service. Please try again later.',
+              );
+            }),
+          ),
+      );
+      if (response?.error) {
+        throw new BadRequestException(response.error);
+      }
+      return response;
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'An error occurred while resetting password. Please try again later.',
       );
     }
   }
