@@ -3,6 +3,10 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -11,6 +15,8 @@ import * as argon2 from 'argon2';
 import { Exclude } from 'class-transformer';
 import { RefreshToken } from './refresh-tokens/entities/refresh-token.entity';
 import { Device } from './devices/entities/device.entity';
+import { Role } from './roles/entities/role.entity';
+import { Permission } from './permissions/entities/permission.entity';
 
 @Entity('users')
 export class User {
@@ -77,6 +83,55 @@ export class User {
   refreshTokens: RefreshToken[];
   @OneToMany(() => Device, (device) => device.user)
   devices: Device[];
+
+  @Column('jsonb', {
+    default: {
+      transactionalEmails: false,
+      marketingEmails: false,
+      systemEmails: false,
+    },
+  })
+  emailPreference: {
+    transactionalEmails: boolean;
+    marketingEmails: boolean;
+    systemEmails: boolean;
+  };
+
+  @ManyToOne(() => Role, (role) => role.users)
+  @JoinColumn({ name: 'role_id', foreignKeyConstraintName: 'FK_user_role_id' })
+  role: Role;
+
+  @ManyToMany(() => Permission, { cascade: true })
+  @JoinTable({
+    name: 'user_permissions',
+    joinColumn: {
+      name: 'user_id',
+      referencedColumnName: 'id',
+      foreignKeyConstraintName: 'fk_user_permissions_user_id',
+    },
+    inverseJoinColumn: {
+      name: 'permission_id',
+      referencedColumnName: 'id',
+      foreignKeyConstraintName: 'fk_user_permissions_permission_id',
+    },
+  })
+  permissions: Permission[];
+
+  @ManyToMany(() => Permission, { cascade: true })
+  @JoinTable({
+    name: 'user_denied_permissions',
+    joinColumn: {
+      name: 'user_id',
+      referencedColumnName: 'id',
+      foreignKeyConstraintName: 'FK_user_denied_permissions_user_id',
+    },
+    inverseJoinColumn: {
+      name: 'permission_id',
+      referencedColumnName: 'id',
+      foreignKeyConstraintName: 'FK_user_denied_permissions_permission_id',
+    },
+  })
+  deniedPermissions: Permission[];
 
   async hashPassword(): Promise<void> {
     this.password = await argon2.hash(this.password);
