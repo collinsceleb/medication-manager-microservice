@@ -14,7 +14,7 @@ import { RmqModule } from '@app/common/rmq';
     TypeOrmModule.forFeature([RefreshToken]),
     DevicesModule,
     forwardRef(() => UsersModule),
-    SharedModule,
+    forwardRef(() => SharedModule),
     UtilitiesModule,
     RmqModule,
   ],
