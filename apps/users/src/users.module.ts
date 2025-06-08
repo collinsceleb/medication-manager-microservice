@@ -40,7 +40,7 @@ import { SharedModule } from '@app/auth-utils/shared/shared.module';
     }),
     DevicesModule,
     forwardRef(() => RefreshTokensModule),
-    SharedModule,
+    forwardRef(() => SharedModule),
   ],
   controllers: [UsersController],
   providers: [UsersService],

@@ -7,6 +7,7 @@ import {
   Post,
   Query,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from '../../../auth/src/dto/create-auth.dto';
@@ -16,6 +17,7 @@ import { CreateUserDto } from '../users/dto/create-user.dto';
 import { VerifyEmailDto } from '../../../users/src/dto/verify-email.dto';
 import { ForgotPasswordDto } from '../../../users/src/dto/forgot-password.dto';
 import { ResetPasswordDto } from '../../../users/src/dto/reset-password.dto';
+import { JwtAuthGuard } from '@app/auth-utils/jwt-auth/jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -37,6 +39,7 @@ export class AuthController {
     };
     return await this.authService.login(createAuthDto, metadata);
   }
+
   @Post('refreshToken/:uniqueDeviceId')
   async refreshToken(
     @Body() createRefreshTokenDto: CreateRefreshTokenDto,
@@ -54,6 +57,7 @@ export class AuthController {
     );
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch('revoke-token/:uniqueDeviceId')
   async revokeToken(
     @Param('uniqueDeviceId') uniqueDeviceId: string,
@@ -65,11 +69,13 @@ export class AuthController {
     );
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch('revoke-all-tokens')
   async revokeAllTokens(@Query('userId') userId?: string) {
     return await this.authService.revokeAllTokens(userId);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete('remove-revoked-tokens')
   async removeRevokedTokens() {
     return await this.authService.removeRevokedTokens();
@@ -80,7 +86,7 @@ export class AuthController {
     return await this.authService.forgotPassword(forgotPasswordDto);
   }
 
-  @Post('forgot-password')
+  @Post('reset-password')
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     return await this.authService.resetPassword(resetPasswordDto);
   }

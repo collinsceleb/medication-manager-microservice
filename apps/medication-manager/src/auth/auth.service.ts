@@ -250,7 +250,7 @@ export class AuthService {
     try {
       const response = await firstValueFrom(
         this.usersClient
-          .send({ cmd: 'forgot_password' }, { forgotPasswordDto })
+          .send({ cmd: 'forgot_password' }, forgotPasswordDto)
           .pipe(
             timeout(30000),
             catchError((err) => {
@@ -279,19 +279,17 @@ export class AuthService {
   async resetPassword(resetPasswordDto: ResetPasswordDto) {
     try {
       const response = await firstValueFrom(
-        this.usersClient
-          .send({ cmd: 'forgot_password' }, { resetPasswordDto })
-          .pipe(
-            timeout(30000),
-            catchError((err) => {
-              this.logger.error(
-                `Microservice communication error: ${err.message}`,
-              );
-              throw new InternalServerErrorException(
-                'Failed to communicate with auth service. Please try again later.',
-              );
-            }),
-          ),
+        this.usersClient.send({ cmd: 'reset_password' }, resetPasswordDto).pipe(
+          timeout(30000),
+          catchError((err) => {
+            this.logger.error(
+              `Microservice communication error: ${err.message}`,
+            );
+            throw new InternalServerErrorException(
+              'Failed to communicate with auth service. Please try again later.',
+            );
+          }),
+        ),
       );
       if (response?.error) {
         throw new BadRequestException(response.error);
