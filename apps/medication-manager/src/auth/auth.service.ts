@@ -17,6 +17,8 @@ import { CreateUserDto } from '../users/dto/create-user.dto';
 import { VerifyEmailDto } from '../../../users/src/dto/verify-email.dto';
 import { ForgotPasswordDto } from '../../../users/src/dto/forgot-password.dto';
 import { ResetPasswordDto } from '../../../users/src/dto/reset-password.dto';
+import { CreatePermissionDto } from '../../../users/src/permissions/dto/create-permission.dto';
+import { UpdatePermissionDto } from '../../../users/src/permissions/dto/update-permission.dto';
 
 @Injectable()
 export class AuthService {
@@ -301,6 +303,153 @@ export class AuthService {
       }
       throw new InternalServerErrorException(
         'An error occurred while resetting password. Please try again later.',
+      );
+    }
+  }
+  async createPermission(createPermissionDto: CreatePermissionDto) {
+    try {
+      const response = await firstValueFrom(
+        this.usersClient
+          .send({ cmd: 'create_permission' }, createPermissionDto)
+          .pipe(
+            timeout(30000),
+            catchError((err) => {
+              this.logger.error(
+                `Microservice communication error: ${err.message}`,
+              );
+              throw new InternalServerErrorException(
+                'Failed to communicate with auth service. Please try again later.',
+              );
+            }),
+          ),
+      );
+      if (response?.error) {
+        throw new BadRequestException(response.error);
+      }
+      return response;
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'An error occurred while creating permission. Please try again later.',
+      );
+    }
+  }
+  async getPermissions() {
+    try {
+      const response = await firstValueFrom(
+        this.usersClient.send({ cmd: 'get_all_permissions' }, {}).pipe(
+          timeout(30000),
+          catchError((err) => {
+            this.logger.error(
+              `Microservice communication error: ${err.message}`,
+            );
+            throw new InternalServerErrorException(
+              'Failed to communicate with auth service. Please try again later.',
+            );
+          }),
+        ),
+      );
+      if (response?.error) {
+        throw new BadRequestException(response.error);
+      }
+      return response;
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'An error occurred while getting permissions Please try again later.',
+      );
+    }
+  }
+  async getPermissionById(id: string) {
+    try {
+      const response = await firstValueFrom(
+        this.usersClient.send({ cmd: 'get_permission' }, { id }).pipe(
+          timeout(30000),
+          catchError((err) => {
+            this.logger.error(
+              `Microservice communication error: ${err.message}`,
+            );
+            throw new InternalServerErrorException(
+              'Failed to communicate with auth service. Please try again later.',
+            );
+          }),
+        ),
+      );
+      if (response?.error) {
+        throw new BadRequestException(response.error);
+      }
+      return response;
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'An error occurred while getting permission. Please try again later.',
+      );
+    }
+  }
+  async updatePermission(
+    id: string,
+    updatePermissionDto: UpdatePermissionDto,
+  ) {
+    try {
+      const response = await firstValueFrom(
+        this.usersClient
+          .send({ cmd: 'update_permission' }, { id, updatePermissionDto })
+          .pipe(
+            timeout(30000),
+            catchError((err) => {
+              this.logger.error(
+                `Microservice communication error: ${err.message}`,
+              );
+              throw new InternalServerErrorException(
+                'Failed to communicate with auth service. Please try again later.',
+              );
+            }),
+          ),
+      );
+      if (response?.error) {
+        throw new BadRequestException(response.error);
+      }
+      return response;
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'An error occurred while updating permission. Please try again later.',
+      );
+    }
+  }
+  async deletePermission(id: string) {
+    try {
+      const response = await firstValueFrom(
+        this.usersClient.send({ cmd: 'delete_permission' }, { id }).pipe(
+          timeout(30000),
+          catchError((err) => {
+            this.logger.error(
+              `Microservice communication error: ${err.message}`,
+            );
+            throw new InternalServerErrorException(
+              'Failed to communicate with auth service. Please try again later.',
+            );
+          }),
+        ),
+      );
+      if (response?.error) {
+        throw new BadRequestException(response.error);
+      }
+      return response;
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'An error occurred while deleting permission. Please try again later.',
       );
     }
   }

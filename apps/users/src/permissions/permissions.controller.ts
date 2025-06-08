@@ -8,28 +8,34 @@ import { UpdatePermissionDto } from './dto/update-permission.dto';
 export class PermissionsController {
   constructor(private readonly permissionsService: PermissionsService) {}
 
-  @MessagePattern('createPermission')
-  create(@Payload() createPermissionDto: CreatePermissionDto) {
-    return this.permissionsService.create(createPermissionDto);
+  @MessagePattern('create_permission')
+  async createPermission(@Payload() createPermissionDto: CreatePermissionDto) {
+    return await this.permissionsService.createPermission(createPermissionDto);
   }
 
-  @MessagePattern('findAllPermissions')
-  findAll() {
-    return this.permissionsService.findAll();
+  @MessagePattern('get_all_permissions')
+  async getAllPermissions() {
+    return await this.permissionsService.getAllPermissions();
   }
 
-  @MessagePattern('findOnePermission')
-  findOne(@Payload() id: number) {
-    return this.permissionsService.findOne(id);
+  @MessagePattern('get_permission')
+  async getPermissionById(@Payload() id: string) {
+    return await this.permissionsService.getPermissionById(id);
   }
 
-  @MessagePattern('updatePermission')
-  update(@Payload() updatePermissionDto: UpdatePermissionDto) {
-    return this.permissionsService.update(updatePermissionDto.id, updatePermissionDto);
+  @MessagePattern('update_permission')
+  async updatePermission(
+    @Payload() data: { id: string; updatePermissionDto: UpdatePermissionDto },
+  ) {
+    const { id, updatePermissionDto } = data;
+    return await this.permissionsService.updatePermission(
+      id,
+      updatePermissionDto,
+    );
   }
 
-  @MessagePattern('removePermission')
-  remove(@Payload() id: number) {
-    return this.permissionsService.remove(id);
+  @MessagePattern('delete_permission')
+  async deletePermission(@Payload() id: string) {
+    return await this.permissionsService.deletePermission(id);
   }
 }

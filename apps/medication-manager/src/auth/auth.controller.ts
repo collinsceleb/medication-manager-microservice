@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Param,
   Patch,
   Post,
@@ -18,6 +19,8 @@ import { VerifyEmailDto } from '../../../users/src/dto/verify-email.dto';
 import { ForgotPasswordDto } from '../../../users/src/dto/forgot-password.dto';
 import { ResetPasswordDto } from '../../../users/src/dto/reset-password.dto';
 import { JwtAuthGuard } from '@app/auth-utils/jwt-auth/jwt-auth.guard';
+import { CreatePermissionDto } from '../../../users/src/permissions/dto/create-permission.dto';
+import { UpdatePermissionDto } from '../../../users/src/permissions/dto/update-permission.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -73,6 +76,39 @@ export class AuthController {
   @Patch('revoke-all-tokens')
   async revokeAllTokens(@Query('userId') userId?: string) {
     return await this.authService.revokeAllTokens(userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('create-permission')
+  async createPermission(@Body() createPermissionDto: CreatePermissionDto) {
+    return await this.authService.createPermission(createPermissionDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('get-permissions')
+  async getPermissions() {
+    return await this.authService.getPermissions();
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('get-permission/:id')
+  async getPermissionById(@Param('id') id: string) {
+    return await this.authService.getPermissionById(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('update-permission/:id')
+  async updatePermission(
+    @Param('id') id: string,
+    @Body() updatePermissionDto: UpdatePermissionDto,
+  ) {
+    return await this.authService.updatePermission(id, updatePermissionDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('delete-permission/:id')
+  async deletePermission(@Param('id') id: string) {
+    return await this.authService.deletePermission(id);
   }
 
   @UseGuards(JwtAuthGuard)
