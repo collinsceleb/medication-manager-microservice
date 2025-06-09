@@ -19,6 +19,9 @@ import { ForgotPasswordDto } from '../../../users/src/dto/forgot-password.dto';
 import { ResetPasswordDto } from '../../../users/src/dto/reset-password.dto';
 import { CreatePermissionDto } from '../../../users/src/permissions/dto/create-permission.dto';
 import { UpdatePermissionDto } from '../../../users/src/permissions/dto/update-permission.dto';
+import { CreateRoleDto } from '../../../users/src/roles/dto/create-role.dto';
+import { UpdateRoleDto } from '../../../users/src/roles/dto/update-role.dto';
+import { AssignPermissionDto } from '../../../users/src/roles/dto/assign-permission.dto';
 
 @Injectable()
 export class AuthService {
@@ -392,10 +395,7 @@ export class AuthService {
       );
     }
   }
-  async updatePermission(
-    id: string,
-    updatePermissionDto: UpdatePermissionDto,
-  ) {
+  async updatePermission(id: string, updatePermissionDto: UpdatePermissionDto) {
     try {
       const response = await firstValueFrom(
         this.usersClient
@@ -450,6 +450,222 @@ export class AuthService {
       }
       throw new InternalServerErrorException(
         'An error occurred while deleting permission. Please try again later.',
+      );
+    }
+  }
+  async createRole(createRoleDto: CreateRoleDto) {
+    try {
+      const response = await firstValueFrom(
+        this.usersClient.send({ cmd: 'create_role' }, createRoleDto).pipe(
+          timeout(30000),
+          catchError((err) => {
+            this.logger.error(
+              `Microservice communication error: ${err.message}`,
+            );
+            throw new InternalServerErrorException(
+              'Failed to communicate with auth service. Please try again later.',
+            );
+          }),
+        ),
+      );
+      if (response?.error) {
+        throw new BadRequestException(response.error);
+      }
+      return response;
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'An error occurred while creating role. Please try again later.',
+      );
+    }
+  }
+
+  async getRoles() {
+    try {
+      const response = await firstValueFrom(
+        this.usersClient.send({ cmd: 'get_all_roles' }, {}).pipe(
+          timeout(30000),
+          catchError((err) => {
+            this.logger.error(
+              `Microservice communication error: ${err.message}`,
+            );
+            throw new InternalServerErrorException(
+              'Failed to communicate with auth service. Please try again later.',
+            );
+          }),
+        ),
+      );
+      if (response?.error) {
+        throw new BadRequestException(response.error);
+      }
+      return response;
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'An error occurred while getting all roles. Please try again later.',
+      );
+    }
+  }
+
+  async getRoleById(id: string) {
+    try {
+      const response = await firstValueFrom(
+        this.usersClient.send({ cmd: 'get_role' }, { id }).pipe(
+          timeout(30000),
+          catchError((err) => {
+            this.logger.error(
+              `Microservice communication error: ${err.message}`,
+            );
+            throw new InternalServerErrorException(
+              'Failed to communicate with auth service. Please try again later.',
+            );
+          }),
+        ),
+      );
+      if (response?.error) {
+        throw new BadRequestException(response.error);
+      }
+      return response;
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'An error occurred while getting a role. Please try again later.',
+      );
+    }
+  }
+  async updateRole(id: string, updateRoleDto: UpdateRoleDto) {
+    try {
+      const response = await firstValueFrom(
+        this.usersClient
+          .send({ cmd: 'update_role' }, { id, updateRoleDto })
+          .pipe(
+            timeout(30000),
+            catchError((err) => {
+              this.logger.error(
+                `Microservice communication error: ${err.message}`,
+              );
+              throw new InternalServerErrorException(
+                'Failed to communicate with auth service. Please try again later.',
+              );
+            }),
+          ),
+      );
+      if (response?.error) {
+        throw new BadRequestException(response.error);
+      }
+      return response;
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'An error occurred while updating role. Please try again later.',
+      );
+    }
+  }
+  async deleteRole(id: string) {
+    try {
+      const response = await firstValueFrom(
+        this.usersClient.send({ cmd: 'delete_role' }, { id }).pipe(
+          timeout(30000),
+          catchError((err) => {
+            this.logger.error(
+              `Microservice communication error: ${err.message}`,
+            );
+            throw new InternalServerErrorException(
+              'Failed to communicate with auth service. Please try again later.',
+            );
+          }),
+        ),
+      );
+      if (response?.error) {
+        throw new BadRequestException(response.error);
+      }
+      return response;
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'An error occurred while deleting role. Please try again later.',
+      );
+    }
+  }
+  async assignPermissionsToRole(
+    roleId: string,
+    assignPermissionsDto: AssignPermissionDto,
+  ) {
+    try {
+      const response = await firstValueFrom(
+        this.usersClient
+          .send(
+            { cmd: 'assign_permissions_to_role' },
+            { roleId, assignPermissionsDto },
+          )
+          .pipe(
+            timeout(30000),
+            catchError((err) => {
+              this.logger.error(
+                `Microservice communication error: ${err.message}`,
+              );
+              throw new InternalServerErrorException(
+                'Failed to communicate with auth service. Please try again later.',
+              );
+            }),
+          ),
+      );
+      if (response?.error) {
+        throw new BadRequestException(response.error);
+      }
+      return response;
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'An error occurred while assigning permissions to role. Please try again later.',
+      );
+    }
+  }
+  async removePermissionsFromRole(
+    roleId: string,
+    assignPermissionsDto: AssignPermissionDto,
+  ) {
+    try {
+      const response = await firstValueFrom(
+        this.usersClient
+          .send(
+            { cmd: 'remove_permissions_from_role' },
+            { roleId, assignPermissionsDto },
+          )
+          .pipe(
+            timeout(30000),
+            catchError((err) => {
+              this.logger.error(
+                `Microservice communication error: ${err.message}`,
+              );
+              throw new InternalServerErrorException(
+                'Failed to communicate with auth service. Please try again later.',
+              );
+            }),
+          ),
+      );
+      if (response?.error) {
+        throw new BadRequestException(response.error);
+      }
+      return response;
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'An error occurred while from permissions from role. Please try again later.',
       );
     }
   }
