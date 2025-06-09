@@ -21,6 +21,9 @@ import { ResetPasswordDto } from '../../../users/src/dto/reset-password.dto';
 import { JwtAuthGuard } from '@app/auth-utils/jwt-auth/jwt-auth.guard';
 import { CreatePermissionDto } from '../../../users/src/permissions/dto/create-permission.dto';
 import { UpdatePermissionDto } from '../../../users/src/permissions/dto/update-permission.dto';
+import { CreateRoleDto } from '../../../users/src/roles/dto/create-role.dto';
+import { UpdateRoleDto } from '../../../users/src/roles/dto/update-role.dto';
+import { AssignPermissionDto } from '../../../users/src/roles/dto/assign-permission.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -125,5 +128,62 @@ export class AuthController {
   @Post('reset-password')
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     return await this.authService.resetPassword(resetPasswordDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('create-role')
+  async createRole(@Body() createRoleDto: CreateRoleDto) {
+    return await this.authService.createRole(createRoleDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('get-roles')
+  async getRoles() {
+    return await this.authService.getRoles();
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('get-role/:id')
+  async getRoleById(@Param('id') id: string) {
+    return await this.authService.getRoleById(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('update-role/:id')
+  async updateRole(
+    @Param('id') id: string,
+    @Body() updateRoleDto: UpdateRoleDto,
+  ) {
+    return await this.authService.updateRole(id, updateRoleDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('delete-role/:id')
+  async deleteRole(@Param('id') id: string) {
+    return await this.authService.deleteRole(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':roleId/assign-permissions-role')
+  async assignPermissionsToRole(
+    @Param('roleId') roleId: string,
+    @Body() assignPermissionsDto: AssignPermissionDto,
+  ) {
+    return await this.authService.assignPermissionsToRole(
+      roleId,
+      assignPermissionsDto,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':roleId/remove-permissions-role')
+  async removePermissionsFromRole(
+    @Param('roleId') roleId: string,
+    @Body() removePermissionsDto: AssignPermissionDto,
+  ) {
+    return await this.authService.removePermissionsFromRole(
+      roleId,
+      removePermissionsDto,
+    );
   }
 }
