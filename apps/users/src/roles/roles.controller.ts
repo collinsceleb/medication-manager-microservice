@@ -9,22 +9,22 @@ import { AssignPermissionDto } from './dto/assign-permission.dto';
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 
-  @MessagePattern('create_role')
+  @MessagePattern({ cmd: 'create_role' })
   async createRole(@Payload() createRoleDto: CreateRoleDto) {
     return await this.rolesService.createRole(createRoleDto);
   }
 
-  @MessagePattern('get_all_roles')
+  @MessagePattern({ cmd: 'get_all_roles' })
   async getAllRoles() {
     return await this.rolesService.getAllRoles();
   }
 
-  @MessagePattern('get_role')
+  @MessagePattern({ cmd: 'get_role' })
   async getRoleById(@Payload() id: string) {
     return await this.rolesService.getRoleById(id);
   }
 
-  @MessagePattern('update_role')
+  @MessagePattern({ cmd: 'update_role' })
   async updateRole(
     @Payload() data: { id: string; updateRoleDto: UpdateRoleDto },
   ) {
@@ -32,12 +32,12 @@ export class RolesController {
     return await this.rolesService.updateRole(id, updateRoleDto);
   }
 
-  @MessagePattern('delete_role')
+  @MessagePattern({ cmd: 'delete_role' })
   async deleteRole(@Payload() id: string) {
     return await this.rolesService.deleteRole(id);
   }
 
-  @MessagePattern('assign_permissions_to_role')
+  @MessagePattern({ cmd: 'assign_permissions_to_role' })
   async addPermissionsToRole(
     @Payload()
     data: {
@@ -52,7 +52,7 @@ export class RolesController {
     );
   }
 
-  @MessagePattern('remove_permissions_from_role')
+  @MessagePattern({ cmd: 'remove_permissions_from_role' })
   async removePermissionsFromRole(
     @Payload()
     data: {
