@@ -8,22 +8,22 @@ import { UpdatePermissionDto } from './dto/update-permission.dto';
 export class PermissionsController {
   constructor(private readonly permissionsService: PermissionsService) {}
 
-  @MessagePattern('create_permission')
+  @MessagePattern({ cmd: 'create_permission' })
   async createPermission(@Payload() createPermissionDto: CreatePermissionDto) {
     return await this.permissionsService.createPermission(createPermissionDto);
   }
 
-  @MessagePattern('get_all_permissions')
+  @MessagePattern({ cmd: 'get_all_permissions' })
   async getAllPermissions() {
     return await this.permissionsService.getAllPermissions();
   }
 
-  @MessagePattern('get_permission')
+  @MessagePattern({ cmd: 'get_permission' })
   async getPermissionById(@Payload() id: string) {
     return await this.permissionsService.getPermissionById(id);
   }
 
-  @MessagePattern('update_permission')
+  @MessagePattern({ cmd: 'update_permission' })
   async updatePermission(
     @Payload() data: { id: string; updatePermissionDto: UpdatePermissionDto },
   ) {
@@ -34,7 +34,7 @@ export class PermissionsController {
     );
   }
 
-  @MessagePattern('delete_permission')
+  @MessagePattern({ cmd: 'delete_permission' })
   async deletePermission(@Payload() id: string) {
     return await this.permissionsService.deletePermission(id);
   }
