@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsString, Matches, MinLength } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, Matches, MinLength } from 'class-validator';
+import { Role } from '../roles/entities/role.entity';
 
 export class CreateUserDto {
   @IsNotEmpty({ message: 'Email is required' })
@@ -38,4 +39,7 @@ export class CreateUserDto {
   @Matches(/^[a-zA-Z]+$/, { message: 'Last name must contain only letters' })
   @Matches(/^\S*$/, { message: 'Last name must not contain spaces' })
   lastName: string;
+
+  @IsOptional()
+  role?: Role;
 }
