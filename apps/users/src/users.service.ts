@@ -17,8 +17,9 @@ import { firstValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { CreateAuthDto } from '../../auth/src/dto/create-auth.dto';
-import { ForgotPasswordDto } from "./dto/forgot-password.dto";
-import { ResetPasswordDto } from "./dto/reset-password.dto";
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { Role } from './roles/entities/role.entity';
 
 @Injectable()
 export class UsersService {
@@ -38,14 +39,35 @@ export class UsersService {
     try {
       await queryRunner.connect();
       await queryRunner.startTransaction();
-      const { email, username, password, lastName, firstName } = createUserDto;
+      const { email, username, password, lastName, firstName, role } =
+        createUserDto;
       await this.checkUserExists({ email, username });
+      let assignedRole: Role;
+      const userRoleName = role;
+      if (userRoleName) {
+        assignedRole = await queryRunner.manager.findOne(Role, {
+          where: { name: userRoleName as unknown as string },
+        });
+        if (!assignedRole) {
+          throw new BadRequestException(`Role ${userRoleName} does not exist`);
+        }
+      } else {
+        assignedRole = await queryRunner.manager.findOne(Role, {
+          where: { name: 'User' },
+        });
+        if (!assignedRole) {
+          throw new InternalServerErrorException(
+            'Default role not found. Please contact support.',
+          );
+        }
+      }
       const user = queryRunner.manager.create(User, {
         email,
         username,
         password,
         lastName,
         firstName,
+        role: assignedRole.id as unknown as Role,
       });
       await user.hashPassword();
       await queryRunner.manager.save(User, user);
@@ -218,9 +240,7 @@ export class UsersService {
       );
     }
   }
-  async forgotPassword(
-    forgotPasswordDto: ForgotPasswordDto,
-  ): Promise<User> {
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<User> {
     const queryRunner = this.datasource.createQueryRunner();
     try {
       await queryRunner.connect();
